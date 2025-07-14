@@ -1,6 +1,7 @@
+
+
 const express = require("express");
 const cors = require("cors");
-const bcrypt = require("bcrypt");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
 const app = express();
@@ -8,11 +9,7 @@ const PORT = process.env.PORT || 3000;
 
 const FRONTEND_URL = "https://beststudyguide.netlify.app";
 
-app.use(
-  cors({
-    origin: FRONTEND_URL,
-  })
-);
+app.use(cors({ origin: FRONTEND_URL }));
 app.use(express.json());
 
 // MongoDB URI with password URL-encoded (replace admin if needed)
@@ -20,11 +17,7 @@ const uri =
   "mongodb+srv://admin:jfiVarQC%24T%21CQT2@beststudyguide.q4krgkm.mongodb.net/?retryWrites=true&w=majority&appName=BestStudyGuide";
 
 const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
+  serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true },
 });
 
 let usersCollection;
@@ -33,18 +26,14 @@ async function connectDB() {
   try {
     await client.connect();
     console.log("Connected to MongoDB");
-    const db = client.db("BestStudyGuideDB"); // your database name
-    usersCollection = db.collection("users"); // your collection name
+    const db = client.db("BestStudyGuideDB"); // your DB name
+    usersCollection = db.collection("users"); // your users collection
   } catch (err) {
     console.error("MongoDB connection error:", err);
   }
 }
 
 connectDB();
-
-app.get("/", (req, res) => {
-  res.send("Backend server is running!");
-});
 
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
@@ -59,8 +48,7 @@ app.post("/api/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid username or password." });
     }
 
-    const validPassword = await bcrypt.compare(password, user.hash);
-    if (!validPassword) {
+    if (user.password !== password) {
       return res.status(401).json({ message: "Invalid username or password." });
     }
 
@@ -72,5 +60,6 @@ app.post("/api/login", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
+
