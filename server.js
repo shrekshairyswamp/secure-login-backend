@@ -1,51 +1,74 @@
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Replace with your actual frontend URL (Netlify domain)
 const FRONTEND_URL = "https://beststudyguide.netlify.app";
 
-app.use(cors({
-  origin: FRONTEND_URL,
-}));
+app.use(
+  cors({
+    origin: FRONTEND_URL,
+  })
+);
 app.use(express.json());
 
-// Example users with hashed passwords
-const users = [
-  { username: "personwea2", hash: bcrypt.hashSync("gilbert1234", 10) },
-  { username: "admin", hash: bcrypt.hashSync("gilbert1234", 10) },
-  { username: "chronic", hash: bcrypt.hashSync("chronic1234", 10) },
-  { username: "bigace", hash: bcrypt.hashSync("bigace1234", 10) }
-];
+// MongoDB URI with password URL-encoded (replace admin if needed)
+const uri =
+  "mongodb+srv://admin:jfiVarQC%24T%21CQT2@beststudyguide.q4krgkm.mongodb.net/?retryWrites=true&w=majority&appName=BestStudyGuide";
 
-// Root route to avoid “Not Found”
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
+
+let usersCollection;
+
+async function connectDB() {
+  try {
+    await client.connect();
+    console.log("Connected to MongoDB");
+    const db = client.db("BestStudyGuideDB"); // your database name
+    usersCollection = db.collection("users"); // your collection name
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
+  }
+}
+
+connectDB();
+
 app.get("/", (req, res) => {
   res.send("Backend server is running!");
 });
 
-// Login route
-app.post("/api/login", (req, res) => {
+app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
     return res.status(400).json({ message: "Username and password required." });
   }
 
-  const user = users.find(u => u.username === username);
-  if (!user) {
-    return res.status(401).json({ message: "Invalid username or password." });
-  }
+  try {
+    const user = await usersCollection.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid username or password." });
+    }
 
-  const validPassword = bcrypt.compareSync(password, user.hash);
-  if (!validPassword) {
-    return res.status(401).json({ message: "Invalid username or password." });
-  }
+    const validPassword = await bcrypt.compare(password, user.hash);
+    if (!validPassword) {
+      return res.status(401).json({ message: "Invalid username or password." });
+    }
 
-  // Successful login
-  res.json({ message: "Login successful" });
+    res.json({ message: "Login successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
 
 app.listen(PORT, () => {
