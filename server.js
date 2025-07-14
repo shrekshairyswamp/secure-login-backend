@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Replace with your actual Netlify frontend URL
+// Replace with your actual frontend URL (Netlify domain)
 const FRONTEND_URL = "https://beststudyguide.netlify.app";
 
 app.use(cors({
@@ -21,6 +21,12 @@ const users = [
   { username: "bigace", hash: bcrypt.hashSync("bigace1234", 10) }
 ];
 
+// Root route to avoid “Not Found”
+app.get("/", (req, res) => {
+  res.send("Backend server is running!");
+});
+
+// Login route
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
 
