@@ -18,7 +18,8 @@ const users = [
   { username: "personwea2", hash: bcrypt.hashSync("gilbert1234", 10) },
   { username: "admin", hash: bcrypt.hashSync("gilbert1234", 10) },
   { username: "chronic", hash: bcrypt.hashSync("chronic1234", 10) },
-  { username: "bigace", hash: bcrypt.hashSync("bigace1234", 10) }
+  { username: "bigace", hash: bcrypt.hashSync("bigace1234", 10) },
+  { username: "kick", hash: bcrypt.hashSync("gilbert1234", 10) }
 ];
 
 // Root route to avoid “Not Found”
